@@ -653,6 +653,7 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                     )
                 }
             }
+            } // Close Column from line 510
         }
     }
 }
