@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">EasyO</string>
+    <string name="accessibility_service_desc">EasyO Auto-Transfer Automation - ระบบตัวช่วยกรอกและกดยืนยันการโอนเงินอัตโนมัติสำหรับรายการถอนเงิน</string>
+</resources>

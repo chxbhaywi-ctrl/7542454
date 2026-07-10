@@ -1,0 +1,60 @@
+# Codemagic CI/CD Configuration for Android
+# เอกสารอ้างอิง: https://codemagic.io
+
+workflows:
+  android-build:
+    name: Build & Test PayGate Forwarder
+    max_build_duration: 60
+    instance_type: mac_mini_m1 
+    environment:
+      groups:
+        - secrets
+      vars:
+        JAVA_VERSION: "21"
+      node: latest
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: '*'
+          include: true
+          source: true
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+      - name: Set up JDK $JAVA_VERSION
+        script: |
+          echo "Setting up Java version $JAVA_VERSION"
+          sdk use java 21.0.2-sem || true 
+
+      - name: Generate Gradle Wrapper (หากไม่มีใน Git)
+        script: |
+          gradle wrapper --gradle-version 9.3.1
+
+      - name: Generate Debug Keystore (สร้างไฟล์ยืนยันตัวตนสำหรับเวอร์ชันทดสอบ)
+        script: |
+          keytool -genkey -v -keystore $CM_BUILD_DIR/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Build Debug APK (สำหรับนำไปติดตั้งทดสอบ)
+        script: |
+          ./gradlew assembleDebug
+
+      # ปิดขั้นตอนการบิลด์เพื่อส่งขึ้น Store ชั่วคราว เพื่อให้นำไฟล์ APK หลักไปใช้งานได้ทันที
+      # - name: Build Release Bundle (AAB) & APK (สำหรับนำไปอัปโหลดขึ้น Play Store)
+      #   script: |
+      #     ./gradlew assembleRelease bundleRelease
+
+    artifacts:
+      # ตั้งค่าให้ดึงเฉพาะไฟล์ตัวแอปเวอร์ชัน Debug ออกมาให้ดาวน์โหลดใช้งาน
+      - app/build/outputs/apk/**/*.apk
+
+    publishing:
+      email:
+        recipients:
+          - edm1175qq@gmail.com 
+        notify:
+          success: true
+          failure: true

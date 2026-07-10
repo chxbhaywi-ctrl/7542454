@@ -1,0 +1,8 @@
+{
+  "name": "Remix: EasyO",
+  "description": "SMS and banking notification forwarder to secure webhooks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

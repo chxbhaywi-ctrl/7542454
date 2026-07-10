@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "427758274791",
+    "project_id": "project-7750189466288634137",
+    "storage_bucket": "project-7750189466288634137.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427758274791:android:eb3830a46e85785178ba42",
+        "android_client_info": {
+          "package_name": "com.aistudio.paygatesms.wdbycz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMKCWa1qdyDQvxS7Vz_BSXUK80_2uqpKk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427758274791:android:61c9149e193f795478ba42",
+        "android_client_info": {
+          "package_name": "com.aistudio.smsforwarder.easyo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMKCWa1qdyDQvxS7Vz_BSXUK80_2uqpKk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
