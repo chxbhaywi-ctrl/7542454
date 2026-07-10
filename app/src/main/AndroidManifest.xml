@@ -57,20 +57,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Accessibility Service for automated bank transfer -->
-        <service
-            android:name=".service.BankAutomationService"
-            android:label="EasyO Auto-Transfer Automation"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.view.accessibility.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
-
     </application>
 
 </manifest>

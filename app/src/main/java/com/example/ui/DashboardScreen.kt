@@ -39,6 +39,8 @@ import androidx.compose.material.icons.outlined.Link
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -225,6 +227,34 @@ fun openAutostartSettings(context: Context) {
     }
 }
 
+fun getRemainingDaysText(expiresAt: String?): String {
+    if (expiresAt == null) {
+        return "ใช้งานได้ตลอดชีพ"
+    }
+    val format = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+    return try {
+        val expires = format.parse(expiresAt)?.time ?: return "ไม่สามารถคำนวณได้"
+        val now = System.currentTimeMillis()
+        val diff = expires - now
+        if (diff <= 0) {
+            "หมดอายุแล้ว"
+        } else {
+            val seconds = diff / 1000
+            val minutes = seconds / 60
+            val hours = minutes / 60
+            val days = hours / 24
+            when {
+                days > 0 -> "เหลือ $days วัน"
+                hours > 0 -> "เหลือ $hours ชั่วโมง"
+                minutes > 0 -> "เหลือ $minutes นาที"
+                else -> "เหลือไม่ถึงนาที"
+            }
+        }
+    } catch (e: Exception) {
+        "ไม่สามารถแสดงวันได้"
+    }
+}
+
 @Composable
 fun LoginScreen(viewModel: MainViewModel) {
     var username by remember { mutableStateOf("") }
@@ -265,23 +295,14 @@ fun LoginScreen(viewModel: MainViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Logo
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0x1AFFFFFF))
-                        .border(BorderStroke(1.dp, GlassBorder), RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "O",
-                        color = LimeGreen,
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.SansSerif
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.easyo_logo),
+                        contentDescription = "EasyO Logo",
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(RoundedCornerShape(16.dp))
                     )
-                }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
@@ -491,19 +512,7 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                             unselectedTextColor = TextSecondary
                         )
                     )
-                    NavigationBarItem(
-                        selected = currentTab == 3,
-                        onClick = { currentTab = 3 },
-                        icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = "โอนเงินออโต้") },
-                        label = { Text("โอนเงินออโต้", fontSize = 11.sp) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = LimeGreen,
-                            selectedTextColor = LimeGreen,
-                            indicatorColor = Color(0x19FFFFFF),
-                            unselectedIconColor = TextSecondary,
-                            unselectedTextColor = TextSecondary
-                        )
-                    )
+
                 }
             }
         ) { innerPadding ->
@@ -521,22 +530,13 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
+                        Image(
+                            painter = painterResource(id = R.drawable.easyo_logo),
+                            contentDescription = "EasyO Logo",
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0x1AFFFFFF))
-                                .border(BorderStroke(1.dp, GlassBorder), RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "O",
-                                color = LimeGreen,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif
-                            )
-                        }
+                        )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
@@ -556,6 +556,12 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                                 text = "ผู้ใช้: ${appUser?.username ?: ""}",
                                 color = TextSecondary,
                                 fontSize = 11.sp
+                            )
+                            Text(
+                                text = getRemainingDaysText(appUser?.expiresAt),
+                                color = LimeGreen,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -610,7 +616,6 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                     0 -> DashboardTab(
                         viewModel = viewModel,
                         hasNotificationPermission = hasNotificationPermission,
-                        hasAccessibilityPermission = hasAccessibilityPermission,
                         logs = logs,
                         smsEnabled = config.isSmsForwardEnabled,
                         notificationEnabled = config.isNotificationForwardEnabled,
@@ -629,8 +634,7 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                             } catch (e: Exception) {
                                 Toast.makeText(context, "ไม่สามารถเปิดหน้าตั้งค่าได้", Toast.LENGTH_LONG).show()
                             }
-                        },
-                        onGrantAccessibilityClick = { openAccessibilitySettings(context) }
+                        }
                     )
                     1 -> SettingsTab(
                         viewModel = viewModel,
@@ -648,9 +652,7 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                             com.example.service.BankNotificationListenerService.forceRebind(context)
                         }
                     )
-                    3 -> WithdrawAutomationTab(
-                        viewModel = viewModel
-                    )
+
                 }
             }
             } // Close Column from line 510
@@ -662,7 +664,6 @@ fun MainDashboardApp(viewModel: MainViewModel) {
 fun DashboardTab(
     viewModel: MainViewModel,
     hasNotificationPermission: Boolean,
-    hasAccessibilityPermission: Boolean,
     logs: List<ForwardLog>,
     smsEnabled: Boolean,
     notificationEnabled: Boolean,
@@ -670,8 +671,7 @@ fun DashboardTab(
     token: String,
     onSmsToggle: (Boolean) -> Unit,
     onNotificationToggle: (Boolean) -> Unit,
-    onGrantPermissionClick: () -> Unit,
-    onGrantAccessibilityClick: () -> Unit
+    onGrantPermissionClick: () -> Unit
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -846,55 +846,7 @@ fun DashboardTab(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // 3. Accessibility Service (for Auto Transfer)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .background(if (hasAccessibilityPermission) LimeGreen else WarningYellow, CircleShape)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "3. สิทธิ์ Accessibility Service (สำหรับโอนเงินอัตโนมัติ)",
-                                    color = TextPrimary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Text(
-                                text = if (hasAccessibilityPermission) "ระบบโอนเงินอัตโนมัติเปิดใช้งานแล้ว" else "จำเป็นต้องเปิดเพื่อใช้งานระบบโอนเงินอัตโนมัติ",
-                                color = if (hasAccessibilityPermission) LimeGreen else TextSecondary,
-                                fontSize = 11.sp,
-                                modifier = Modifier.padding(start = 16.dp, top = 2.dp)
-                            )
-                        }
-                        Button(
-                            onClick = onGrantAccessibilityClick,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (hasAccessibilityPermission) Color(0x1610B981) else WarningYellow
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                            modifier = Modifier.height(32.dp)
-                        ) {
-                            Text(
-                                text = if (hasAccessibilityPermission) "เปิดแล้ว" else "กดเปิดสิทธิ์",
-                                color = if (hasAccessibilityPermission) LimeGreen else SlateDark,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // 4. Autostart Settings Helper
+                    // 3. Autostart Settings Helper
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -909,7 +861,7 @@ fun DashboardTab(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "4. เริ่มต้นอัตโนมัติ (Autostart Settings)",
+                                    text = "3. เริ่มต้นอัตโนมัติ (Autostart Settings)",
                                     color = TextPrimary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
