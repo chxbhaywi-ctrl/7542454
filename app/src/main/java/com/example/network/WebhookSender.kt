@@ -48,9 +48,11 @@ object WebhookSender {
             val db = AppDatabase.getDatabase(context)
             val configDao = db.configDao()
             val logDao = db.forwardLogDao()
+            val appUserDao = db.appUserDao()
 
             // Fetch configuration directly and merge with defaults
             val config = AppDatabase.getMergedConfig(configDao.getConfigDirect())
+            val appUser = appUserDao.getAppUserDirect()
 
             // Check if forwarding is enabled for this type
             if (!ignoreEnabledCheck) {
@@ -90,6 +92,7 @@ object WebhookSender {
 
             // Build request JSON with only the essential keys expected by the callback backend.
             // This avoids strict schema validation errors (e.g. unknown fields) on the receiving server.
+            val username = appUser?.username ?: ""
             val requestBodyJson = """
                 {
                   "sender": "${escapeJson(sender)}",
@@ -99,7 +102,8 @@ object WebhookSender {
                   "time": "$currentTimeStr",
                   "date": "$currentDateStr",
                   "created_at": "$currentDateStr",
-                  "type": "${escapeJson(type)}"
+                  "type": "${escapeJson(type)}",
+                  "username": "${escapeJson(username)}"
                 }
             """.trimIndent()
 
@@ -138,6 +142,7 @@ object WebhookSender {
                             .add("date", currentDateStr)
                             .add("created_at", currentDateStr)
                             .add("type", type)
+                            .add("username", appUser?.username ?: "")
                             .build()
 
                         val fallbackRequest = Request.Builder()

@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
@@ -535,72 +537,57 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                             painter = painterResource(id = R.drawable.easyo_logo),
                             contentDescription = "EasyO Logo",
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(45.dp)
                                 .clip(RoundedCornerShape(12.dp))
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
                         Column {
                             Text(
                                 text = "SYSTEM SECURE",
                                 color = AccentBlue,
-                                fontSize = 11.sp,
+                                fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             )
                             Text(
                                 text = "EasyO Forwarder",
                                 color = TextPrimary,
-                                fontSize = 20.sp,
+                                fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "ผู้ใช้: ${appUser?.username ?: ""}",
                                 color = TextSecondary,
-                                fontSize = 11.sp
+                                fontSize = 12.sp
                             )
                             Text(
                                 text = getRemainingDaysText(appUser?.expiresAt),
                                 color = LimeGreen,
-                                fontSize = 11.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // Monitoring status badge
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        // Monitoring status dot only
                         val liveMonitoring = config.isSmsForwardEnabled || config.isNotificationForwardEnabled
-                        Row(
+                        Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(if (liveMonitoring) Color(0x1A10B981) else Color(0x1AEF4444))
-                                .border(BorderStroke(1.dp, if (liveMonitoring) Color(0x3310B981) else Color(0x33EF4444)), RoundedCornerShape(20.dp))
-                                .padding(horizontal = 10.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(if (liveMonitoring) GlassAccentGreen else ErrorRed)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = if (liveMonitoring) "LIVE MONITORING" else "PAUSED",
-                                color = if (liveMonitoring) GlassAccentGreen else ErrorRed,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                                .size(14.dp)
+                                .clip(CircleShape)
+                                .background(if (liveMonitoring) GlassAccentGreen else WarningYellow)
+                        )
                         // Logout Button
                         Button(
                             onClick = { viewModel.logout() },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0x1AEF4444)),
                             shape = RoundedCornerShape(12.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "ออก",
+                                text = "ออกจากระบบ",
                                 color = ErrorRed,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -678,6 +665,7 @@ fun DashboardTab(
     val clipboardManager = LocalClipboardManager.current
     
     var isBatteryIgnored by remember { mutableStateOf(isBatteryOptimizationIgnored(context)) }
+    var isAssistantExpanded by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -705,43 +693,56 @@ fun DashboardTab(
                 border = BorderStroke(1.dp, GlassBorder)
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
-                    // Header
+                    // Header with expand/collapse
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isAssistantExpanded = !isAssistantExpanded },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(Color(0x1610B981), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Notifications,
-                                contentDescription = "Background Settings Helper",
-                                tint = LimeGreen,
-                                modifier = Modifier.size(20.dp)
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(Color(0x1610B981), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Notifications,
+                                    contentDescription = "Background Settings Helper",
+                                    tint = LimeGreen,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "ตัวช่วยการทำงานเบื้องหลัง (Background Run Assistant)",
+                                    color = TextPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "สิทธิ์แอดมิน (Admin) ไม่สามารถดักการแจ้งเตือนได้",
+                                    color = TextSecondary,
+                                    fontSize = 11.sp
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "ตัวช่วยการทำงานเบื้องหลัง (Background Run Assistant)",
-                                color = TextPrimary,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "สิทธิ์แอดมิน (Admin) ไม่สามารถดักการแจ้งเตือนได้ ต้องเปิดสิทธิ์ด้านล่างนี้แทน",
-                                color = TextSecondary,
-                                fontSize = 11.sp
-                            )
-                        }
+                        Icon(
+                            imageVector = if (isAssistantExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = if (isAssistantExpanded) "收起" else "展开",
+                            tint = TextSecondary,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = GlassBorder.copy(alpha = 0.5f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                    // Expandable content
+                    if (isAssistantExpanded) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = GlassBorder.copy(alpha = 0.5f))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                     // 1. Notification Listener Access
                     Row(
@@ -890,6 +891,7 @@ fun DashboardTab(
                             )
                         }
                     }
+                    } // End of expandable content
                 }
             }
         }
