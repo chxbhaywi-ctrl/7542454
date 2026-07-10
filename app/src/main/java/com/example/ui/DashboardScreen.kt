@@ -1,5 +1,6 @@
 package com.example.ui
 
+import com.example.R
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
