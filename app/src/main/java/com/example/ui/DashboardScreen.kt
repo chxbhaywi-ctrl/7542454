@@ -628,6 +628,7 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                         viewModel = viewModel,
                         currentUrl = config.webhookUrl,
                         currentToken = config.token,
+                        appUser = appUser,
                         onSave = { url, token ->
                             viewModel.saveConfig(url, token)
                             Toast.makeText(context, "บันทึกที่อยู่เรียบร้อยแล้ว", Toast.LENGTH_SHORT).show()
@@ -1282,12 +1283,14 @@ fun SettingsTab(
     viewModel: MainViewModel,
     currentUrl: String,
     currentToken: String,
+    appUser: com.example.data.AppUser?,
     onSave: (String, String) -> Unit
 ) {
     val context = LocalContext.current
     var url by remember(currentUrl) { mutableStateOf(currentUrl) }
     var token by remember(currentToken) { mutableStateOf(currentToken) }
 
+    val isAdmin = appUser?.username == "EDM1174-Admin_#OEASY"
     val isTesting by viewModel.isTestingWebhook.collectAsState()
     val testResult by viewModel.testResult.collectAsState()
 
@@ -1314,14 +1317,14 @@ fun SettingsTab(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "แก้ไขเป้าหมาย Webhook",
+                        text = if (isAdmin) "แก้ไขเป้าหมาย Webhook" else "ทดสอบระบบ",
                         color = TextPrimary,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "ระบบจะยิง HTTP POST ไปยัง URL นี้ทันทีที่ได้รับ SMS หรือการแจ้งเตือนจากธนาคาร พร้อมแนบ Token ใน Headers และ Body เพื่อความปลอดภัย 100%",
+                        text = if (isAdmin) "ระบบจะยิง HTTP POST ไปยัง URL นี้ทันทีที่ได้รับ SMS หรือการแจ้งเตือนจากธนาคาร พร้อมแนบ Token ใน Headers และ Body เพื่อความปลอดภัย 100%" else "ทดสอบการส่งข้อความไปยัง Webhook ที่ตั้งค่าไว้",
                         color = TextSecondary,
                         fontSize = 11.sp,
                         lineHeight = 15.sp
@@ -1349,7 +1352,8 @@ fun SettingsTab(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = url,
-                        onValueChange = { url = it },
+                        onValueChange = { if (isAdmin) url = it },
+                        enabled = isAdmin,
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("webhook_url_input"),
@@ -1359,8 +1363,11 @@ fun SettingsTab(
                             unfocusedBorderColor = GlassBorder,
                             focusedTextColor = TextPrimary,
                             unfocusedTextColor = TextPrimary,
+                            disabledBorderColor = GlassBorder,
+                            disabledTextColor = TextPrimary,
                             focusedContainerColor = GlassBgDarker,
-                            unfocusedContainerColor = GlassBgDarker
+                            unfocusedContainerColor = GlassBgDarker,
+                            disabledContainerColor = GlassBgDarker
                         ),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
@@ -1379,7 +1386,8 @@ fun SettingsTab(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = token,
-                        onValueChange = { token = it },
+                        onValueChange = { if (isAdmin) token = it },
+                        enabled = isAdmin,
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("webhook_token_input"),
@@ -1389,8 +1397,11 @@ fun SettingsTab(
                             unfocusedBorderColor = GlassBorder,
                             focusedTextColor = TextPrimary,
                             unfocusedTextColor = TextPrimary,
+                            disabledBorderColor = GlassBorder,
+                            disabledTextColor = TextPrimary,
                             focusedContainerColor = GlassBgDarker,
-                            unfocusedContainerColor = GlassBgDarker
+                            unfocusedContainerColor = GlassBgDarker,
+                            disabledContainerColor = GlassBgDarker
                         ),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp)
@@ -1425,23 +1436,25 @@ fun SettingsTab(
                             } else {
                                 Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Test", tint = LimeGreen)
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("ทดสอบส่ง", color = LimeGreen, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text(if (isAdmin) "ทดสอบส่ง" else "ทดสอบ", color = LimeGreen, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                         }
 
-                        // Save Button
-                        Button(
-                            onClick = { onSave(url, token) },
-                            modifier = Modifier
-                                .weight(1.2f)
-                                .height(46.dp)
-                                .testTag("save_webhook_button"),
-                            colors = ButtonDefaults.buttonColors(containerColor = LimeGreen),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.Save, contentDescription = "Save", tint = Color.White)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("บันทึกที่อยู่", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        // Save Button (only for admin)
+                        if (isAdmin) {
+                            Button(
+                                onClick = { onSave(url, token) },
+                                modifier = Modifier
+                                    .weight(1.2f)
+                                    .height(46.dp)
+                                    .testTag("save_webhook_button"),
+                                colors = ButtonDefaults.buttonColors(containerColor = LimeGreen),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.Save, contentDescription = "Save", tint = Color.White)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("บันทึกที่อยู่", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
                         }
                     }
                 }
