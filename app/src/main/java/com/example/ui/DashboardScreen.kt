@@ -114,24 +114,32 @@ data class BankAppInfo(
     val packageName: String,
     val color: Color,
     val initial: String,
-    val fullName: String
+    val fullName: String,
+    val logoRes: Int? = null
 )
 
 val THAI_BANKS = listOf(
-    BankAppInfo("K PLUS", "com.kasikorn.kplus,com.kasikorn.retail.mbanking.wap", Color(0xFF138F47), "K", "ธนาคารกสิกรไทย (K PLUS)"),
-    BankAppInfo("K-Biz", "com.kasikornbank.kbiz", Color(0xFF138F47), "KB", "กสิกรไทย ธุรกิจ (K-Biz)"),
-    BankAppInfo("K-Merchant", "com.kasikornbank.kmerchant", Color(0xFF138F47), "KM", "กสิกรไทย ร้านค้า (K-Merchant)"),
-    BankAppInfo("SCB EASY", "com.scb.phone", Color(0xFF4E2A84), "S", "ธนาคารไทยพาณิชย์ (SCB EASY)"),
-    BankAppInfo("Krungthai NEXT", "th.co.krungthaibank.next", Color(0xFF00A4E4), "KT", "ธนาคารกรุงไทย (Krungthai NEXT)"),
-    BankAppInfo("Bualuang mB", "com.bualuang.mbanking", Color(0xFF003399), "B", "ธนาคารกรุงเทพ (Bualuang mBanking)"),
-    BankAppInfo("KMA krungsri", "com.krungsri.kma", Color(0xFFFCBA12), "Kr", "ธนาคารกรุงศรีอยุธยา (KMA)"),
-    BankAppInfo("ttb touch", "com.ttbbank.oneapp", Color(0xFF0056FF), "ttb", "ธนาคารทหารไทยธนชาต (ttb touch)"),
-    BankAppInfo("MyMo", "gsb.or.th.mymo", Color(0xFFED008C), "M", "ธนาคารออมสิน (MyMo)"),
-    BankAppInfo("TrueMoney", "com.tdg.truemoneywallet", Color(0xFFFF5F00), "TM", "ทรูมันนี่ วอลเล็ท (TrueMoney Wallet)"),
-    BankAppInfo("ShopeePay", "com.garena.android.koalapay", Color(0xFFFF5722), "SP", "ช้อปปี้เพย์ (ShopeePay)"),
-    BankAppInfo("LHB mChoice", "th.co.lhbank.mobilebanking", Color(0xFF53565A), "LH", "ธนาคารแลนด์ แอนด์ เฮ้าส์"),
-    BankAppInfo("UOB TMRW", "com.uob.mightyth", Color(0xFF012D74), "U", "ธนาคารยูโอบี (UOB TMRW)"),
-    BankAppInfo("CIMB Clicks", "th.co.cimbthai.clicks", Color(0xFFC7082C), "C", "ธนาคารซีไอเอ็มบี ไทย")
+    BankAppInfo("K PLUS", "com.kasikorn.kplus,com.kasikorn.retail.mbanking.wap,com.kasikornbank.mobile,com.kasikorn.kplus.samsung", Color(0xFF138F47), "K", "ธนาคารกสิกรไทย (K PLUS)", R.drawable.ic_bank_kbank),
+    BankAppInfo("K-Biz", "com.kasikornbank.kbiz", Color(0xFF138F47), "KB", "กสิกรไทย ธุรกิจ (K-Biz)", R.drawable.ic_bank_kbank),
+    BankAppInfo("K-Merchant", "com.kasikornbank.kmerchant", Color(0xFF138F47), "KM", "กสิกรไทย ร้านค้า (K-Merchant)", R.drawable.ic_bank_kbank),
+    BankAppInfo("SCB EASY", "com.scb.phone,com.scb.smbbanking,com.scb.mobilebanking,com.scb.th", Color(0xFF4E2A84), "S", "ธนาคารไทยพาณิชย์ (SCB EASY)", R.drawable.ic_bank_scb),
+    BankAppInfo("Krungthai NEXT", "th.co.krungthaibank.next,com.krungthai.mobile,th.co.krungthai.mobile", Color(0xFF00A4E4), "KT", "ธนาคารกรุงไทย (Krungthai NEXT)", R.drawable.ic_bank_ktb),
+    BankAppInfo("Bualuang mB", "com.bualuang.mbanking", Color(0xFF003399), "B", "ธนาคารกรุงเทพ (Bualuang mBanking)", R.drawable.ic_bank_krungsri),
+    BankAppInfo("KMA krungsri", "com.krungsri.kma,com.krungsri.mobile,com.krungsri.kma.android", Color(0xFFFCBA12), "Kr", "ธนาคารกรุงศรีอยุธยา (KMA)", R.drawable.ic_bank_krungsri),
+    BankAppInfo("ttb touch", "com.ttbbank.oneapp,com.ttbbank.mobile,com.ttbbank.one", Color(0xFF0056FF), "ttb", "ธนาคารทหารไทยธนชาต (ttb touch)", R.drawable.ic_bank_ttb),
+    BankAppInfo("MyMo", "gsb.or.th.mymo,th.or.gsb.mobilebanking,gsb.or.th.mobile,com.gsb.mobile", Color(0xFFED008C), "M", "ธนาคารออมสิน (MyMo)", R.drawable.ic_bank_gsb),
+    BankAppInfo("TrueMoney", "com.tdg.truemoneywallet,com.truemoney.wallet,com.tdg.truemoney", Color(0xFFFF5F00), "TM", "ทรูมันนี่ วอลเล็ท (TrueMoney Wallet)", R.drawable.ic_bank_tmn),
+    BankAppInfo("ShopeePay", "com.garena.android.koalapay,com.shopeepay.th,com.garena.koalapay", Color(0xFFFF5722), "SP", "ช้อปปี้เพย์ (ShopeePay)", R.drawable.ic_bank_spay),
+    BankAppInfo("LHB mChoice", "th.co.lhbank.mobilebanking,th.co.lhbank.mobile", Color(0xFF53565A), "LH", "ธนาคารแลนด์ แอนด์ เฮ้าส์", R.drawable.ic_bank_lhb),
+    BankAppInfo("UOB TMRW", "com.uob.mightyth,com.uob.thailand,com.uob.mobile.th,com.uob.mighty.th", Color(0xFF012D74), "U", "ธนาคารยูโอบี (UOB TMRW)", R.drawable.ic_bank_uob),
+    BankAppInfo("CIMB Clicks", "th.co.cimbthai.clicks,com.cimb.th,th.co.cimbthai.mobile", Color(0xFFC7082C), "C", "ธนาคารซีไอเอ็มบี ไทย", R.drawable.ic_bank_cimb),
+    BankAppInfo("Bangkok Bank", "com.bangkokbank.mobile,com.bangkokbank.bualuangm,com.bangkokbank.bualuang,th.co.bangkokbank.mobile", Color(0xFF004683), "BBL", "ธนาคารกรุงเทพ (Bangkok Bank)", R.drawable.ic_bank_bbl),
+    BankAppInfo("GH Bank", "com.ghbank.mobile,ghbank.or.th.mobile", Color(0xFF009A86), "GH", "ธนาคารอาคารสงเคราะห์ (GH Bank)", R.drawable.ic_bank_ghb),
+    BankAppInfo("TISCO", "com.tisco.mobile,th.co.tisco.mobilebanking", Color(0xFF8A6D3B), "T", "ธนาคารทิสโก้ (TISCO)", R.drawable.ic_bank_tisco),
+    BankAppInfo("Thanachart", "com.thanachart.mobile,th.co.thanachartbank.mobile", Color(0xFFED6C00), "Th", "ธนาคารธนชาต (Thanachart)", R.drawable.ic_bank_thanachart),
+    BankAppInfo("GrabPay", "com.grab.pay", Color(0xFF00B14F), "GP", "GrabPay", R.drawable.ic_bank_grab),
+    BankAppInfo("PayPal", "com.paypal.android", Color(0xFF003087), "PP", "PayPal", R.drawable.ic_bank_paypal),
+    BankAppInfo("PromptPay", "com.bankofthailand.mobile,com.promptpay.th", Color(0xFF107C10), "PP", "PromptPay", R.drawable.ic_bank_pp)
 )
 
 fun isNotificationServiceEnabled(context: Context): Boolean {
@@ -1669,20 +1677,31 @@ fun AppSelectionTab(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f)
                         ) {
-                            // Circular Initial Badge for Bank
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(bank.color.copy(alpha = 0.2f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = bank.initial,
-                                    color = bank.color,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                            // Bank Logo or Initial Badge
+                            if (bank.logoRes != null) {
+                                Image(
+                                    painter = painterResource(id = bank.logoRes),
+                                    contentDescription = bank.name,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Transparent)
                                 )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(bank.color.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = bank.initial,
+                                        color = bank.color,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {

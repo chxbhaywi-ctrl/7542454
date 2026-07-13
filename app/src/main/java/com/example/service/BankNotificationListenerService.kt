@@ -192,22 +192,130 @@ class BankNotificationListenerService : NotificationListenerService() {
         }
     }
 
+    // ระบบดักจับข้อความธนาคารที่สมบูรณ์ - ครอบคลุมทุกธนาคารและทุกแอป
     private val BANK_PACKAGES = setOf(
+        // เกษตรไทย - KBank
         "com.kasikorn.kplus",
         "com.kasikornbank.kbiz",
         "com.kasikornbank.kmerchant",
         "com.kasikorn.retail.mbanking.wap",
+        "com.kasikornbank.mobile",
+        "com.kasikorn.kplus.samsung",
+        
+        // SCB
         "com.scb.phone",
+        "com.scb.smbbanking",
+        "com.scb.mobilebanking",
+        "com.scb.th",
+        
+        // กรุงไทย - Krungthai
         "th.co.krungthaibank.next",
+        "com.krungthai.mobile",
+        "com.krungthaibank.next",
+        "th.co.krungthai.mobile",
+        
+        // กรุงศรี - Krungsri
         "com.bualuang.mbanking",
         "com.krungsri.kma",
+        "com.krungsri.mobile",
+        "com.krungsri.kma.android",
+        
+        // TTB Bank
         "com.ttbbank.oneapp",
+        "com.ttbbank.mobile",
+        "com.ttbbank.one",
+        
+        // GSB
         "gsb.or.th.mymo",
+        "th.or.gsb.mobilebanking",
+        "gsb.or.th.mobile",
+        
+        // TrueMoney
         "com.tdg.truemoneywallet",
+        "com.truemoney.wallet",
+        "com.tdg.truemoney",
+        
+        // ShopeePay
         "com.garena.android.koalapay",
+        "com.shopeepay.th",
+        "com.garena.koalapay",
+        
+        // LHB
         "th.co.lhbank.mobilebanking",
+        "th.co.lhbank.mobile",
+        
+        // UOB
         "com.uob.mightyth",
-        "th.co.cimbthai.clicks"
+        "com.uob.thailand",
+        "com.uob.mobile.th",
+        
+        // CIMB
+        "th.co.cimbthai.clicks",
+        "com.cimb.th",
+        "th.co.cimbthai.mobile",
+        
+        // ไทยพาณิชย์ - Bangkok Bank
+        "com.bangkokbank.mobile",
+        "com.bangkokbank.bualuangm",
+        "com.bangkokbank.bualuang",
+        "th.co.bangkokbank.mobile",
+        
+        // ออมสิน - Government Savings Bank
+        "com.gsb.mobile",
+        "th.or.gsb.mobilebanking",
+        
+        // ธนาคารทหารไทย - TMB/TTB
+        "com.tmb.tmbank",
+        "com.tmbank.mobile",
+        
+        // ธนาคารอาคารสงเคราะห์ - GHBank
+        "com.ghbank.mobile",
+        "ghbank.or.th.mobile",
+        
+        // ธนาคารสินมูลไทย - TISCO
+        "com.tisco.mobile",
+        "th.co.tisco.mobilebanking",
+        
+        // ธนาคารทิพย์ - Thanachart
+        "com.thanachart.mobile",
+        "th.co.thanachartbank.mobile",
+        
+        // ธนาคารกสิกร - KBank (ทุกเวอร์ชั่น)
+        "com.kasikorn.retail.mbanking",
+        "com.kasikorn.kplus.ent",
+        "com.kasikorn.kplus.corp",
+        
+        // ธนาคารยูโอบี - UOB
+        "com.uob.mighty.th",
+        "com.uob.th.mighty",
+        
+        // ธนาคารซีไอเอ็มบี - CIMB
+        "com.cimb.th.mobile",
+        
+        // PromptPay และอื่นๆ
+        "com.bankofthailand.mobile",
+        "com.promptpay.th",
+        
+        // Wallet และอื่นๆ
+        "com.paypal.android",
+        "com.eglobedg.eWallet",
+        "com.grab.pay",
+        "com.mercadopago.android",
+        "com.visa.app",
+        "com.mastercard.app",
+        
+        // ระบบอื่นๆ (คลองเวอร์เพิ่มเติม)
+        "com.techcombank.mobile",
+        "com.techcombank.retail",
+        "com.scb.pay",
+        "com.kasikorn.payment",
+        
+        // All possible clone app packages
+        "com.kasikorn.kplus.clone",
+        "com.scb.phone.clone",
+        "th.co.krungthaibank.next.clone",
+        "com.kasikorn.kplus.dual",
+        "com.scb.phone.dual"
     )
 
     override fun onListenerConnected() {
@@ -232,15 +340,82 @@ class BankNotificationListenerService : NotificationListenerService() {
         }
     }
 
+    // ระบบตรวจสอบแอปธนาคารที่สมบูรณ์ - ครอบคลุมทุกชื่อและคำสำคัญ
     private fun isBankPackage(packageName: String): Boolean {
         if (BANK_PACKAGES.contains(packageName)) return true
         val lowerPkg = packageName.lowercase()
         val bankKeywords = listOf(
-            "kasikorn", "kplus", "kbiz", "kmerchant", "scb.phone", "krungthai", 
-            "bualuang", "mbanking", "krungsri", "ttbbank", "mymo", "gsb.or.th", 
-            "truemoney", "koalapay", "shopeepay", "lhbank", "uob", "cimb"
+            // ไทย
+            "kasikorn", "kplus", "kbiz", "kmerchant", "kbank", 
+            "scb.phone", "scb", "scbeasy",
+            "krungthai", "ktb",
+            "bualuang", "krungsri", "krungsrimobile",
+            "ttbbank", "ttb", "tmb",
+            "mymo", "gsb.or.th", "gsb",
+            "truemoney", "wallet", "tmoney",
+            "koalapay", "shopeepay", "shopee",
+            "lhbank", "lhb",
+            "uob", "mightyth",
+            "cimb", "clicks",
+            "bangkokbank", "bualuangm", "bbl",
+            "ghbank", "ghb",
+            "tisco",
+            "thanachart",
+            "promptpay",
+            
+            // นานาชาติ
+            "paypal",
+            "grab", "grabpay",
+            "mercadopago",
+            "visa",
+            "mastercard",
+            
+            // สำหรับ clone app
+            "clone", "dual", "parallel", "multi"
         )
         return bankKeywords.any { lowerPkg.contains(it) }
+    }
+    
+    // แผนที่แผนที่ชื่อแอปธนาคารที่สมบูรณ์
+    private fun getBankNameFromPackage(packageName: String): String {
+        val lowerPkg = packageName.lowercase()
+        return when {
+            lowerPkg.contains("kasikorn") || lowerPkg.contains("kplus") || lowerPkg.contains("kbank") -> {
+                when {
+                    lowerPkg.contains("kbiz") -> "KBiz"
+                    lowerPkg.contains("kmerchant") -> "KMerchant"
+                    else -> "KBank"
+                }
+            }
+            lowerPkg.contains("scb") -> "SCB"
+            lowerPkg.contains("krungthai") -> "Krungthai"
+            lowerPkg.contains("bualuang") || lowerPkg.contains("krungsri") -> "Krungsri"
+            lowerPkg.contains("ttb") || lowerPkg.contains("ttbbank") || lowerPkg.contains("tmb") -> "TTB"
+            lowerPkg.contains("mymo") || lowerPkg.contains("gsb") -> "GSB"
+            lowerPkg.contains("truemoney") -> "TrueMoney"
+            lowerPkg.contains("koalapay") || lowerPkg.contains("shopeepay") -> "ShopeePay"
+            lowerPkg.contains("lhbank") -> "LHB"
+            lowerPkg.contains("uob") -> "UOB"
+            lowerPkg.contains("cimb") -> "CIMB"
+            lowerPkg.contains("bangkokbank") || lowerPkg.contains("bbl") -> "Bangkok Bank"
+            lowerPkg.contains("ghbank") -> "GHBank"
+            lowerPkg.contains("tisco") -> "TISCO"
+            lowerPkg.contains("thanachart") -> "Thanachart"
+            lowerPkg.contains("grab") -> "GrabPay"
+            lowerPkg.contains("paypal") -> "PayPal"
+            lowerPkg.contains("promptpay") -> "PromptPay"
+            else -> {
+                try {
+                    val pm = packageManager
+                    val appInfo = pm.getApplicationInfo(packageName, 0)
+                    val label = pm.getApplicationLabel(appInfo).toString()
+                    if (label.isNotBlank()) return label
+                } catch (e: Exception) {
+                    // Ignore
+                }
+                "Unknown"
+            }
+        }
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -262,35 +437,17 @@ class BankNotificationListenerService : NotificationListenerService() {
                         val config = AppDatabase.getMergedConfig(db.configDao().getConfigDirect())
                         val extras = sbn.notification.extras ?: android.os.Bundle()
 
-                // Resolve a human-friendly sender name (e.g., K PLUS, SCB EASY, etc. or fallback to Title/Package)
+                // ระบบชื่อธนาคารที่สมบูรณ์ - แม่นยำมากขึ้น
+                val resolvedSender = getBankNameFromPackage(packageName)
+
+                // ระบบดักจับข้อความที่สมบูรณ์สำหรับทุก Android เวอร์ชัน
                 val appLabel = try {
                     val pm = packageManager
                     val appInfo = pm.getApplicationInfo(packageName, 0)
                     pm.getApplicationLabel(appInfo).toString()
                 } catch (e: Exception) {
-                    null
+                    resolvedSender
                 }
-
-                val resolvedSender = when {
-                            packageName.contains("kasikorn.kplus", ignoreCase = true) || packageName.contains("kasikorn.retail.mbanking.wap", ignoreCase = true) -> "KBank"
-                            packageName.contains("kasikornbank.kbiz", ignoreCase = true) -> "KBiz"
-                            packageName.contains("kasikornbank.kmerchant", ignoreCase = true) -> "KMerchant"
-                            packageName.contains("scb.phone", ignoreCase = true) -> "SCB"
-                            packageName.contains("krungthaibank.next", ignoreCase = true) -> "Krungthai"
-                            packageName.contains("bualuang.mbanking", ignoreCase = true) -> "Bualuang"
-                            packageName.contains("krungsri.kma", ignoreCase = true) -> "Krungsri"
-                            packageName.contains("ttbbank.oneapp", ignoreCase = true) -> "ttb"
-                            packageName.contains("gsb.or.th.mymo", ignoreCase = true) -> "MyMo"
-                            packageName.contains("tdg.truemoneywallet", ignoreCase = true) -> "TrueMoney"
-                            packageName.contains("garena.android.koalapay", ignoreCase = true) -> "ShopeePay"
-                            packageName.contains("lhbank.mobilebanking", ignoreCase = true) -> "LHB"
-                            packageName.contains("uob.mightyth", ignoreCase = true) -> "UOB"
-                            packageName.contains("cimbthai.clicks", ignoreCase = true) -> "CIMB"
-                            else -> when {
-                                !appLabel.isNullOrBlank() -> appLabel
-                                else -> packageName
-                            }
-                        }
 
                 // Dump all extras keys to standard format for debugging/troubleshooting
                 val extrasDebug = try {
