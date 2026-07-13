@@ -22,16 +22,17 @@ object WebhookSender {
     private const val MAX_RETRIES = 0 // No retries at all, just send once!
 
     private val dispatcher = okhttp3.Dispatcher().apply {
-        maxRequests = 100
-        maxRequestsPerHost = 50
+        maxRequests = 200 // Increased to 200 for extreme concurrency
+        maxRequestsPerHost = 100 // Increased to 100 for same host
     }
     
     private val client = OkHttpClient.Builder()
         .dispatcher(dispatcher)
-        .connectTimeout(2, TimeUnit.SECONDS)
-        .readTimeout(2, TimeUnit.SECONDS)
-        .writeTimeout(2, TimeUnit.SECONDS)
+        .connectTimeout(5, TimeUnit.SECONDS) // Slightly increased for reliability
+        .readTimeout(5, TimeUnit.SECONDS)
+        .writeTimeout(5, TimeUnit.SECONDS)
         .retryOnConnectionFailure(false) // Don't auto-retry, we handle it
+        .connectionPool(okhttp3.ConnectionPool(0, 1, TimeUnit.NANOSECONDS)) // No connection reuse
         .build()
 
     private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
@@ -140,6 +141,7 @@ object WebhookSender {
                         .addHeader("X-API-KEY", token)
                         .addHeader("api_key", token)
                         .addHeader("Content-Type", "application/json")
+                        .addHeader("Connection", "close")
                         .build()
 
                     client.newCall(request).execute().use { response ->
@@ -168,6 +170,7 @@ object WebhookSender {
                                 .addHeader("Authorization", "Bearer $token")
                                 .addHeader("x-token", token)
                                 .addHeader("token", token)
+                                .addHeader("Connection", "close")
                                 .build()
 
                             client.newCall(fallbackRequest).execute().use { fbResponse ->

@@ -40,6 +40,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.LocalOffer
+import coil.compose.AsyncImage
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
@@ -1734,29 +1735,35 @@ private fun RowPaddingCompact() = androidx.compose.foundation.layout.PaddingValu
 
 data class AdItem(
     val title: String,
-    val description: String
+    val description: String,
+    val imageRes: Int
 )
 
 val adsList = listOf(
     AdItem(
+        title = "EasyO ระบบชำระเงินอัตโนมัติ",
+        description = "ระบบดัก SMS และ Notification ธนาคาร",
+        imageRes = R.drawable.ad_easyo
+    ),
+    AdItem(
         title = "เว็บเทรด FirMix Asia-Trading",
-        description = "ระบบเทรดครบวงจร"
+        description = "ระบบเทรดครบวงจร",
+        imageRes = R.drawable.ad_firmix
     ),
     AdItem(
         title = "EasyO สร้างสลิปธนาคาร",
-        description = "ระบบสร้างสลิปโอนเงิน"
+        description = "ระบบสร้างสลิปโอนเงิน",
+        imageRes = R.drawable.ad_easyo_slip
     ),
     AdItem(
         title = "CCLUP ตลาดออนไลน์",
-        description = "ระบบร้านค้าออนไลน์ครบวงจร"
+        description = "ระบบร้านค้าออนไลน์ครบวงจร",
+        imageRes = R.drawable.ad_cclup
     ),
     AdItem(
-        title = "เว็บคาสิโนครบวงจร",
-        description = "พร้อมรับลูกค้า เริ่มต้นเดือนละ 15000 บาท"
-    ),
-    AdItem(
-        title = "ระบบฝากถอนออโต้",
-        description = "เริ่มต้นเพียงเดือนละ 5000 บาท"
+        title = "เว็บคาสิโนครบวงจร OFF1 Casino",
+        description = "พร้อมรับลูกค้า เริ่มต้นเดือนละ 15000 บาท",
+        imageRes = R.drawable.ad_off1_casino
     )
 )
 
@@ -1804,6 +1811,16 @@ fun AdCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
+            Image(
+                painter = painterResource(id = ad.imageRes),
+                contentDescription = ad.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = ad.title,
                 color = TextPrimary,
