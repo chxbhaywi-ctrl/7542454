@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class Configuration(
     @PrimaryKey val id: Int = 1,
     val webhookUrl: String = "https://easyo.online/api/v1/sms/callback",
-    val token: String = "fd49e732c5f5ed78fe5fe38b5f8ac8c2",
+    val token: String = "0d208ccb24bbe4a9d9dfce89a1d9e831bd52d5eb",
     val isSmsForwardEnabled: Boolean = true,
     val isNotificationForwardEnabled: Boolean = true,
     val selectedBankPackages: String = "com.kasikorn.kplus,com.kasikorn.retail.mbanking.wap,com.kasikornbank.kbiz,com.kasikornbank.kmerchant,com.scb.phone,th.co.krungthaibank.next,com.bualuang.mbanking,com.krungsri.kma,com.ttbbank.oneapp,gsb.or.th.mymo,com.tdg.truemoneywallet,com.garena.android.koalapay,th.co.lhbank.mobilebanking,com.uob.mightyth,th.co.cimbthai.clicks"

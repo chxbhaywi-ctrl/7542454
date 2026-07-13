@@ -30,20 +30,10 @@ class MainViewModel(private val database: AppDatabase) : ViewModel() {
     // Configuration flow
     val configState: StateFlow<Configuration> = configDao.getConfig()
         .map { config ->
-            val defaultConfig = Configuration()
-            val existingConfig = config ?: defaultConfig
-            
-            // Merge existing selected packages with default packages (add any new default packages)
-            val existingPackages = existingConfig.selectedBankPackages.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-            val defaultPackages = defaultConfig.selectedBankPackages.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-            val mergedPackages = (existingPackages + defaultPackages).distinct()
-            
-            val mergedConfig = existingConfig.copy(
-                selectedBankPackages = mergedPackages.joinToString(",")
-            )
+            val mergedConfig = AppDatabase.getMergedConfig(config)
             
             // If merged config is different from existing, save it back to database
-            if (config == null || mergedConfig.selectedBankPackages != existingConfig.selectedBankPackages) {
+            if (config == null || mergedConfig != config) {
                 viewModelScope.launch {
                     configDao.insertConfig(mergedConfig)
                 }

@@ -19,11 +19,20 @@ import java.util.concurrent.TimeUnit
 
 object WebhookSender {
     private const val TAG = "WebhookSender"
+    private const val INITIAL_RETRY_DELAY_MS = 1000L
+    private const val MAX_RETRY_DELAY_MS = 30000L // 30 seconds max delay
+
+    private val dispatcher = okhttp3.Dispatcher().apply {
+        maxRequests = 100
+        maxRequestsPerHost = 50
+    }
     
     private val client = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
-        .writeTimeout(15, TimeUnit.SECONDS)
+        .dispatcher(dispatcher)
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
     private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
@@ -107,95 +116,103 @@ object WebhookSender {
                 }
             """.trimIndent()
 
-            try {
-                val requestBody = requestBodyJson.toRequestBody(JSON_MEDIA_TYPE)
-                
-                val request = Request.Builder()
-                    .url(url)
-                    .post(requestBody)
-                    .addHeader("Authorization", "Bearer $token")
-                    .addHeader("x-token", token)
-                    .addHeader("token", token)
-                    .addHeader("key", token)
-                    .addHeader("secret", token)
-                    .addHeader("x-sms-token", token)
-                    .addHeader("X-SMS-Token", token)
-                    .addHeader("X-API-KEY", token)
-                    .addHeader("api_key", token)
-                    .addHeader("Content-Type", "application/json")
-                    .build()
+            var lastException: Exception? = null
+            var lastResponseCode = 0
+            var lastResponseBody = ""
+            var isSuccessful = false
+            var attempt = 0
+            var currentDelay = INITIAL_RETRY_DELAY_MS
 
-                client.newCall(request).execute().use { response ->
-                    var isSuccessful = response.isSuccessful
-                    var responseBody = response.body?.string() ?: ""
-                    var responseCode = response.code
+            while (!isSuccessful) {
+                attempt++
+                try {
+                    Log.d(TAG, "Attempt $attempt to forward $type from $sender")
+                    val requestBody = requestBodyJson.toRequestBody(JSON_MEDIA_TYPE)
+                    
+                    val request = Request.Builder()
+                        .url(url)
+                        .post(requestBody)
+                        .addHeader("Authorization", "Bearer $token")
+                        .addHeader("x-token", token)
+                        .addHeader("token", token)
+                        .addHeader("key", token)
+                        .addHeader("secret", token)
+                        .addHeader("x-sms-token", token)
+                        .addHeader("X-SMS-Token", token)
+                        .addHeader("X-API-KEY", token)
+                        .addHeader("api_key", token)
+                        .addHeader("Content-Type", "application/json")
+                        .build()
 
-                    // Fallback to application/x-www-form-urlencoded if JSON failed (for compatibility with legacy backends)
-                    if (!isSuccessful) {
-                        Log.d(TAG, "JSON request returned $responseCode. Retrying with FormUrlEncoded...")
-                        val formBody = FormBody.Builder()
-                            .add("sender", sender)
-                            .add("message", message)
-                            .add("token", token)
-                            .add("timestamp", currentTimestamp.toString())
-                            .add("time", currentTimeStr)
-                            .add("date", currentDateStr)
-                            .add("created_at", currentDateStr)
-                            .add("type", type)
-                            .add("username", appUser?.username ?: "")
-                            .build()
+                    client.newCall(request).execute().use { response ->
+                        isSuccessful = response.isSuccessful
+                        lastResponseBody = response.body?.string() ?: ""
+                        lastResponseCode = response.code
 
-                        val fallbackRequest = Request.Builder()
-                            .url(url)
-                            .post(formBody)
-                            .addHeader("Authorization", "Bearer $token")
-                            .addHeader("x-token", token)
-                            .addHeader("token", token)
-                            .build()
+                        // Fallback to application/x-www-form-urlencoded if JSON failed (for compatibility with legacy backends)
+                        if (!isSuccessful) {
+                            Log.d(TAG, "JSON request returned $lastResponseCode. Retrying with FormUrlEncoded (attempt $attempt)...")
+                            val formBody = FormBody.Builder()
+                                .add("sender", sender)
+                                .add("message", message)
+                                .add("token", token)
+                                .add("timestamp", currentTimestamp.toString())
+                                .add("time", currentTimeStr)
+                                .add("date", currentDateStr)
+                                .add("created_at", currentDateStr)
+                                .add("type", type)
+                                .add("username", appUser?.username ?: "")
+                                .build()
 
-                        client.newCall(fallbackRequest).execute().use { fbResponse ->
-                            isSuccessful = fbResponse.isSuccessful
-                            responseBody = fbResponse.body?.string() ?: ""
-                            responseCode = fbResponse.code
+                            val fallbackRequest = Request.Builder()
+                                .url(url)
+                                .post(formBody)
+                                .addHeader("Authorization", "Bearer $token")
+                                .addHeader("x-token", token)
+                                .addHeader("token", token)
+                                .build()
+
+                            client.newCall(fallbackRequest).execute().use { fbResponse ->
+                                isSuccessful = fbResponse.isSuccessful
+                                lastResponseBody = fbResponse.body?.string() ?: ""
+                                lastResponseCode = fbResponse.code
+                            }
+                        }
+                        
+                        if (isSuccessful) {
+                            Log.d(TAG, "Forward successful on attempt $attempt")
+                            break
                         }
                     }
-                    
-                    val logStatus = if (isSuccessful) "SUCCESS" else "FAILED"
-                    val responseMsg = if (isSuccessful) {
-                        "HTTP $responseCode: OK"
-                    } else {
-                        "HTTP $responseCode: ${responseBody.take(150)}"
-                    }
-
-                    Log.d(TAG, "Forward result: Status=$logStatus, Response=$responseMsg")
-
-                    // Insert to local database logs
-                    logDao.insertLog(
-                        ForwardLog(
-                            type = type,
-                            sender = sender,
-                            message = message,
-                            status = logStatus,
-                            responseMessage = responseMsg
-                        )
-                    )
-                    return@withContext isSuccessful
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error on attempt $attempt: ${e.message}", e)
+                    lastException = e
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error forwarding to webhook", e)
-                val responseMsg = e.localizedMessage ?: e.toString()
-                // Insert failure to local logs
-                logDao.insertLog(
-                    ForwardLog(
-                        type = type,
-                        sender = sender,
-                        message = message,
-                        status = "FAILED",
-                        responseMessage = responseMsg
-                    )
-                )
-                return@withContext false
+
+                if (!isSuccessful) {
+                    Log.d(TAG, "Retrying in ${currentDelay}ms...")
+                    kotlinx.coroutines.delay(currentDelay)
+                    // Exponential backoff: double the delay each time, up to max
+                    currentDelay = (currentDelay * 2).coerceAtMost(MAX_RETRY_DELAY_MS)
+                }
             }
+                    
+            val logStatus = "SUCCESS"
+            val responseMsg = "HTTP $lastResponseCode: OK (succeeded on attempt $attempt)"
+
+            Log.d(TAG, "Forward result: Status=$logStatus, Response=$responseMsg")
+
+            // Insert to local database logs
+            logDao.insertLog(
+                ForwardLog(
+                    type = type,
+                    sender = sender,
+                    message = message,
+                    status = logStatus,
+                    responseMessage = responseMsg
+                )
+            )
+            return@withContext isSuccessful
         }
     }
 }

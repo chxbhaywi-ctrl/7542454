@@ -39,8 +39,17 @@ abstract class AppDatabase : RoomDatabase() {
             val defaultPackages = defaultConfig.selectedBankPackages.split(",").map { it.trim() }.filter { it.isNotEmpty() }
             val mergedPackages = (existingPackages + defaultPackages).distinct()
             
+            // Update token to new default if it was the old default
+            val oldDefaultToken = "fd49e732c5f5ed78fe5fe38b5f8ac8c2"
+            val updatedToken = if (existingConfig.token == oldDefaultToken) {
+                defaultConfig.token
+            } else {
+                existingConfig.token
+            }
+            
             return existingConfig.copy(
-                selectedBankPackages = mergedPackages.joinToString(",")
+                selectedBankPackages = mergedPackages.joinToString(","),
+                token = updatedToken
             )
         }
     }
