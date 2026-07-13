@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 
 object WebhookSender {
     private const val TAG = "WebhookSender"
-    private const val RETRY_DELAY_MS = 0L // No delay, retry immediately!
+    private const val MAX_RETRIES = 0 // No retries at all, just send once!
 
     private val dispatcher = okhttp3.Dispatcher().apply {
         maxRequests = 100
@@ -28,10 +28,10 @@ object WebhookSender {
     
     private val client = OkHttpClient.Builder()
         .dispatcher(dispatcher)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
+        .connectTimeout(2, TimeUnit.SECONDS)
+        .readTimeout(2, TimeUnit.SECONDS)
+        .writeTimeout(2, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(false) // Don't auto-retry, we handle it
         .build()
 
     private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
@@ -121,7 +121,7 @@ object WebhookSender {
             var isSuccessful = false
             var attempt = 0
 
-            while (!isSuccessful) {
+            while (attempt <= MAX_RETRIES && !isSuccessful) {
                 attempt++
                 try {
                     Log.d(TAG, "Attempt $attempt to forward $type from $sender")
@@ -149,7 +149,7 @@ object WebhookSender {
 
                         // Fallback to application/x-www-form-urlencoded if JSON failed (for compatibility with legacy backends)
                         if (!isSuccessful) {
-                            Log.d(TAG, "JSON request returned $lastResponseCode. Retrying with FormUrlEncoded (attempt $attempt)...")
+                            Log.d(TAG, "JSON request returned $lastResponseCode. Trying FormUrlEncoded (attempt $attempt)...")
                             val formBody = FormBody.Builder()
                                 .add("sender", sender)
                                 .add("message", message)
@@ -186,15 +186,14 @@ object WebhookSender {
                     Log.e(TAG, "Error on attempt $attempt: ${e.message}", e)
                     lastException = e
                 }
-
-                if (!isSuccessful && RETRY_DELAY_MS > 0) {
-                    Log.d(TAG, "Retrying in ${RETRY_DELAY_MS}ms...")
-                    kotlinx.coroutines.delay(RETRY_DELAY_MS)
-                }
             }
                     
-            val logStatus = "SUCCESS"
-            val responseMsg = "HTTP $lastResponseCode: OK (succeeded on attempt $attempt)"
+            val logStatus = if (isSuccessful) "SUCCESS" else "FAILED"
+            val responseMsg = if (isSuccessful) {
+                "HTTP $lastResponseCode: OK (succeeded on attempt $attempt)"
+            } else {
+                "HTTP $lastResponseCode: Failed after $attempt attempts"
+            }
 
             Log.d(TAG, "Forward result: Status=$logStatus, Response=$responseMsg")
 
