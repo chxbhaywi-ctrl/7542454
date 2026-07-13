@@ -39,6 +39,7 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
@@ -515,6 +516,19 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                             unselectedTextColor = TextSecondary
                         )
                     )
+                    NavigationBarItem(
+                        selected = currentTab == 3,
+                        onClick = { currentTab = 3 },
+                        icon = { Icon(imageVector = Icons.Outlined.LocalOffer, contentDescription = "แนะนำ") },
+                        label = { Text("แนะนำ", fontSize = 11.sp) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = LimeGreen,
+                            selectedTextColor = LimeGreen,
+                            indicatorColor = Color(0x19FFFFFF),
+                            unselectedIconColor = TextSecondary,
+                            unselectedTextColor = TextSecondary
+                        )
+                    )
 
                 }
             }
@@ -641,6 +655,7 @@ fun MainDashboardApp(viewModel: MainViewModel) {
                             com.example.service.BankNotificationListenerService.forceRebind(context)
                         }
                     )
+                    3 -> AdsScreen()
 
                 }
             }
@@ -1716,3 +1731,106 @@ private fun RowPaddingCompact() = androidx.compose.foundation.layout.PaddingValu
     horizontal = 12.dp,
     vertical = 6.dp
 )
+
+data class AdItem(
+    val title: String,
+    val description: String
+)
+
+val adsList = listOf(
+    AdItem(
+        title = "เว็บเทรด FirMix Asia-Trading",
+        description = "ระบบเทรดครบวงจร"
+    ),
+    AdItem(
+        title = "EasyO สร้างสลิปธนาคาร",
+        description = "ระบบสร้างสลิปโอนเงิน"
+    ),
+    AdItem(
+        title = "CCLUP ตลาดออนไลน์",
+        description = "ระบบร้านค้าออนไลน์ครบวงจร"
+    ),
+    AdItem(
+        title = "เว็บคาสิโนครบวงจร",
+        description = "พร้อมรับลูกค้า เริ่มต้นเดือนละ 15000 บาท"
+    ),
+    AdItem(
+        title = "ระบบฝากถอนออโต้",
+        description = "เริ่มต้นเพียงเดือนละ 5000 บาท"
+    )
+)
+
+@Composable
+fun AdsScreen() {
+    val context = LocalContext.current
+
+    fun openTelegram() {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://t.me/EDM1174"))
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "ไม่สามารถเปิดลิงก์ได้", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item { Spacer(modifier = Modifier.height(8.dp)) }
+        items(adsList) { ad ->
+            AdCard(
+                ad = ad,
+                onContactClick = { openTelegram() }
+            )
+        }
+        item { Spacer(modifier = Modifier.height(24.dp)) }
+    }
+}
+
+@Composable
+fun AdCard(
+    ad: AdItem,
+    onContactClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = SlateCard),
+        border = BorderStroke(1.dp, GlassBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = ad.title,
+                color = TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = ad.description,
+                color = TextSecondary,
+                fontSize = 13.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onContactClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = LimeGreen),
+                shape = RoundedCornerShape(16.dp),
+                contentPadding = PaddingValues(vertical = 14.dp)
+            ) {
+                Text(
+                    text = "ติดต่อ Telegram",
+                    color = SlateDark,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
