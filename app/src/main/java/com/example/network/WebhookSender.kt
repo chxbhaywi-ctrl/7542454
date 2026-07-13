@@ -19,8 +19,7 @@ import java.util.concurrent.TimeUnit
 
 object WebhookSender {
     private const val TAG = "WebhookSender"
-    private const val INITIAL_RETRY_DELAY_MS = 1000L
-    private const val MAX_RETRY_DELAY_MS = 30000L // 30 seconds max delay
+    private const val RETRY_DELAY_MS = 0L // No delay, retry immediately!
 
     private val dispatcher = okhttp3.Dispatcher().apply {
         maxRequests = 100
@@ -121,7 +120,6 @@ object WebhookSender {
             var lastResponseBody = ""
             var isSuccessful = false
             var attempt = 0
-            var currentDelay = INITIAL_RETRY_DELAY_MS
 
             while (!isSuccessful) {
                 attempt++
@@ -189,11 +187,9 @@ object WebhookSender {
                     lastException = e
                 }
 
-                if (!isSuccessful) {
-                    Log.d(TAG, "Retrying in ${currentDelay}ms...")
-                    kotlinx.coroutines.delay(currentDelay)
-                    // Exponential backoff: double the delay each time, up to max
-                    currentDelay = (currentDelay * 2).coerceAtMost(MAX_RETRY_DELAY_MS)
+                if (!isSuccessful && RETRY_DELAY_MS > 0) {
+                    Log.d(TAG, "Retrying in ${RETRY_DELAY_MS}ms...")
+                    kotlinx.coroutines.delay(RETRY_DELAY_MS)
                 }
             }
                     
