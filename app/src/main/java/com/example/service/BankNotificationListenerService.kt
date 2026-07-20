@@ -213,6 +213,8 @@ class BankNotificationListenerService : NotificationListenerService() {
         "com.krungthai.mobile",
         "com.krungthaibank.next",
         "th.co.krungthai.mobile",
+        "ktbcs.netbank",
+        "com.ktbcs.netbank",
         
         // กรุงศรี - Krungsri
         "com.bualuang.mbanking",
@@ -348,7 +350,8 @@ class BankNotificationListenerService : NotificationListenerService() {
             // ไทย
             "kasikorn", "kplus", "kbiz", "kmerchant", "kbank", 
             "scb.phone", "scb", "scbeasy",
-            "krungthai", "ktb",
+            "krungthai", "ktb", "ktbcs",
+            "netbank",
             "bualuang", "krungsri", "krungsrimobile",
             "ttbbank", "ttb", "tmb",
             "mymo", "gsb.or.th", "gsb",
@@ -388,7 +391,7 @@ class BankNotificationListenerService : NotificationListenerService() {
                 }
             }
             lowerPkg.contains("scb") -> "SCB"
-            lowerPkg.contains("krungthai") -> "Krungthai"
+            lowerPkg.contains("krungthai") || lowerPkg.contains("ktbcs") || lowerPkg.contains("netbank") -> "Krungthai"
             lowerPkg.contains("bualuang") || lowerPkg.contains("krungsri") -> "Krungsri"
             lowerPkg.contains("ttb") || lowerPkg.contains("ttbbank") || lowerPkg.contains("tmb") -> "TTB"
             lowerPkg.contains("mymo") || lowerPkg.contains("gsb") -> "GSB"
@@ -560,28 +563,6 @@ class BankNotificationListenerService : NotificationListenerService() {
                     )
                     return@launch
                 }
-
-                // Check if the source package is one of the selected bank packages in setting tab (supporting loose matching for cloned/dual apps and comma-separated lists)
-                        val selectedList = config.selectedBankPackages.split(",").flatMap { it.split(",").map { pkg -> pkg.trim() } }.filter { it.isNotEmpty() }
-                        val isSelectedBank = selectedList.any { selectedPkg ->
-                            packageName.equals(selectedPkg, ignoreCase = true) ||
-                            packageName.lowercase().contains(selectedPkg.lowercase()) ||
-                            selectedPkg.lowercase().contains(packageName.lowercase())
-                        }
-
-                if (!isSelectedBank) {
-                    db.forwardLogDao().insertLog(
-                        com.example.data.ForwardLog(
-                            type = "NOTIFICATION",
-                            sender = resolvedSender,
-                            message = combinedMessage,
-                            status = "FAILED",
-                            responseMessage = "ข้ามการส่ง: ธนาคารนี้ ($packageName) ไม่ถูกเลือกในหน้า 'เลือกธนาคาร'"
-                        )
-                    )
-                    return@launch
-                }
-
                 // Forward notification via WebhookSender
                 WebhookSender.sendForward(
                     context = applicationContext,
